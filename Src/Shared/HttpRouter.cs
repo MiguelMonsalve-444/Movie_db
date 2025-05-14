@@ -85,8 +85,4 @@ public class HttpRouter
         }
     }
 
-    internal void AddGet(string v, Func<HttpMiddleware[]> landingPageGet)
-    {
-        throw new NotImplementedException();
-    }
 }
