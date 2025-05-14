@@ -59,11 +59,7 @@ public class HttpRouter
             await middleware(req,res,options);
 
             if(res.StatusCode != RESPONSE_NOT_SET_YET) {return;}
-            {
-
-            }
-
-            
+           
         }
 
         foreach(var (method, route, middlewares) in endpoints)
@@ -85,6 +81,7 @@ public class HttpRouter
         if(res.StatusCode == RESPONSE_NOT_SET_YET) 
         {
             res.StatusCode = (int)HttpStatusCode.NotFound;
+            res.Close();
         }
     }
 
