@@ -11,7 +11,7 @@ using Proyecto_peliculas;
 {
     private HttpListener server;
     private HttpRouter router;
-     public App()
+    public App()
     {
         string host = "http://127.0.0.1:5000/";
         server = new HttpListener();
@@ -24,10 +24,12 @@ using Proyecto_peliculas;
         var autenticationController = new AutenticationControl(userService);
 
 
+
         router = new HttpRouter();
 
-        router.AddGet("/", autenticationController.LandingPageGet); 
-        router.AddGet("/users", userController.ViewAllGet);       
+        router.AddGet("/", autenticationController.LandingPageGet);
+        router.AddGet("/users", userController.ViewAllGet);
+        router.AddGet("/users/add", userController.AddGet);     
     }
      public async Task Start()
     {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Movie_db;
 
@@ -47,7 +48,7 @@ public class UserController
             }
 
             string html = $@"
-
+            <a href=""/users/add"">Add New User</a>
             <table border=""1"">
             <thead>
                <th>Id</th>
@@ -72,5 +73,43 @@ public class UserController
             await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, html);
 
         }
+
+    }   
+    //users/add
+    public async Task AddGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    {
+        string roles = "";
+
+        foreach (var role in Roles.ROLES)
+        {
+            roles += @$"<option valuse=""{role}"">{role}</option>";
+        }
+        string html = @$"
+        
+        <form action=""/users/add"" method=""POST"">
+            <label for=""username"">Username</label>
+            <input id=""username"" name=""username"" type=""text"" placeholder=""Username"">
+            <label for=""password"">Password</label>
+            <input id=""password"" name=""password"" type=""password"" placeholder=""Password"">
+            <label for=""role"">Role</label>
+            <select id=""role"" name=""role"">
+            {roles}
+            </select>
+            <input type=""submit"" value=""Add"">
+        </form>
+        
+        ";
+
+        string content = HtmlTemplates.Base("Movie_db", "User Add Page", html);
+        await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, content);
     }
-}
+    
+
+
+
+
+
+
+
+
+    }
