@@ -13,13 +13,21 @@ using Proyecto_peliculas;
     private HttpRouter router;
      public App()
     {
-        string host = "http://localhost:5000/";
+        string host = "http://127.0.0.1:5000/";
         server = new HttpListener();
         server.Prefixes.Add(host);
         Console.WriteLine($"Server listening... {host}");
-        var autenticationController = new AutenticationControl();
+
+        var userRepository = new MockUserRepository();
+        var userService = new MockUserService(userRepository);
+        var userController = new UserController(userService);
+        var autenticationController = new AutenticationControl(userService);
+
+
         router = new HttpRouter();
-        router.AddGet("/", autenticationController.LandingPageGet);        
+
+        router.AddGet("/", autenticationController.LandingPageGet); 
+        router.AddGet("/users", userController.ViewAllGet);       
     }
      public async Task Start()
     {

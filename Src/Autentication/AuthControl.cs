@@ -8,9 +8,10 @@ using Movie_db;
 
 public class AutenticationControl
 {
-    public AutenticationControl()
+    private IUserService userService;
+    public AutenticationControl(IUserService userService)
     {
-
+        this.userService = userService;
     }
 
     public async Task LandingPageGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)

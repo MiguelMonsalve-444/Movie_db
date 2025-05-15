@@ -52,6 +52,7 @@ public class HttpRouter
 
     public async Task Handle(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
+        Console.WriteLine($"Request: {req.HttpMethod} {req.Url?.AbsolutePath}");
         res.StatusCode = RESPONSE_NOT_SET_YET;
 
         foreach(var middleware in middlewares)
