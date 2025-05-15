@@ -16,10 +16,24 @@ public class AutenticationControl
 
     public async Task LandingPageGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
-       
-            string html = HtmlTemplates.Base("Movie_db","Landing Page", "Hello world 2");
-            
-            await HttpUtilities.Respond(req,res,options,(int)HttpStatusCode.OK,html);
+
+
+        string html = @"
+        
+        <nav>
+           <ul>
+           <li><a href=""/register"">Register</a></li>
+           <li><a href=""/login"">Login</a></li>
+           <li><a href=""/logout"">Logout</a></li>
+           <li><a href=""/users"">Users</a></li>
+           <li><a href=""/actors"">Actors</a></li>
+               <li><a href=""/movies"">Movies</a></li>
+           </ul>
+        </nav>
+        ";
+
+        string content = HtmlTemplates.Base("Movie_db", "Users View All Page", html);
+        await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, content);
 
     }
 }

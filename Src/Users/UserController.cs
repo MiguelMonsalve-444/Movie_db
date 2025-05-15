@@ -19,7 +19,7 @@ public class UserController
     public async Task ViewAllGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
         int page = int.TryParse(req.QueryString["page"], out int p) ? p : 1;
-        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 1;
+        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 5;
 
         Result<PageResult<User>> result = await userService.ReadAll(page, size);
 
@@ -36,17 +36,19 @@ public class UserController
             {
                 rows += @$"
             <tr>
+
                 <td>{user.Id}</td>
                 <td>{user.Username}</td>
                 <td>{user.Password}</td>
-                <td>{user.Role}</td>
                 <td>{user.Salt}</td>
+                <td>{user.Role}</td>
             </tr>
             ";
             }
 
             string html = $@"
-        <table>
+
+            <table border=""1"">
             <thead>
                <th>Id</th>
                <th>UserName</th>

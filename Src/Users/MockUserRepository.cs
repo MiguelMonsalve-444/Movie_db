@@ -3,12 +3,30 @@ namespace Movie_db;
 public class MockUserRepository : IUserRepository
 {
     public List<User> users;
-    private int idCount = 0;
+    private int idCount;
 
     public MockUserRepository()
     {
         users = [];
+        idCount = 1; //Lo cambie para que empiece a contar desde 1 
 
+        var usernames = new string[]
+        {
+            "Alejandro","Beatriz", "Camila","David",
+            "Elena","Fernando","Gabriela","Héctor",
+            "Isabela", "Javier","Karla","Luis"
+        };
+
+        Random r = new Random();
+
+        foreach (var username in usernames)
+        {
+            var pass = Path.GetRandomFileName();
+            var salt = Path.GetRandomFileName();
+            var role = Roles.ROLES[r.Next(Roles.ROLES.Length)];
+            User user = new User(idCount++, username, pass, salt, role);
+            users.Add(user);
+        }
     }
 
     public async Task<PageResult<User>> ReadAll(int page, int size)

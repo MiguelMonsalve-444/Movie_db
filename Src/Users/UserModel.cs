@@ -11,6 +11,7 @@ public class User
 
     public User(int id = 0,string username = "", string password = "", string salt =  "", string role = "")
     {
+        Id = id;
         Username = username;
         Password = password;
         Salt = salt;
