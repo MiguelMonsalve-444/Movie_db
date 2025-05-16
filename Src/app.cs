@@ -26,11 +26,16 @@ using Proyecto_peliculas;
 
 
         router = new HttpRouter();
+        router.Use(HttpUtilities.ReadRequestFormData);
 
         router.AddGet("/", autenticationController.LandingPageGet);
         router.AddGet("/users", userController.ViewAllGet);
-        router.AddGet("/users/add", userController.AddGet);     
+        router.AddGet("/users/add", UserController.AddGet);
+        router.Addpost("/users/add", userController.AddPost);     
+
+
     }
+
      public async Task Start()
     {
         server.Start();

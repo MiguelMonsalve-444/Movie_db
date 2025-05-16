@@ -1,15 +1,15 @@
 using System.Collections;
+using System.Collections.Specialized;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Movie_db;
 
-//using Proyecto_peliculas;
+using Proyecto_peliculas;
 
 public class UserController
 {
     private IUserService userService;
-
 
 
     public UserController(IUserService userService)
@@ -19,8 +19,9 @@ public class UserController
 
     public async Task ViewAllGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
+        string message = (string?)options["message"] ?? "";
         int page = int.TryParse(req.QueryString["page"], out int p) ? p : 1;
-        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 5;
+        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 40;
 
         Result<PageResult<User>> result = await userService.ReadAll(page, size);
 
@@ -68,16 +69,20 @@ public class UserController
             <a href=""?page={page + 1}&size={size}"">Next</a>
             <a href=""?page={pageCount}&size={size}"">Last</a>
         </div>
+        <div>
+        {message}
+        </div>
         ";
 
             await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, html);
 
         }
 
-    }   
+    }
     //users/add
-    public async Task AddGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    public static async Task AddGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
+        string message = req.QueryString["message"] ?? "";
         string roles = "";
 
         foreach (var role in Roles.ROLES)
@@ -97,19 +102,46 @@ public class UserController
             </select>
             <input type=""submit"" value=""Add"">
         </form>
+        <div>
+        {message}
+        </div>
         
         ";
 
         string content = HtmlTemplates.Base("Movie_db", "User Add Page", html);
         await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, content);
     }
-    
 
 
 
+    //POST Users/add
 
+    public async Task AddPost(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    {
 
+        var formData = (NameValueCollection?)options["req.form"] ?? [];
 
+        string username = formData["username"] ?? "";
+        string password = formData["password"] ?? "";
+        string role = formData["role"] ?? "";
 
+         Console.WriteLine($"Username: {username}");
+        User newUser = new User(0, username, password, "", role);
+        Result<User> result = await userService.Create(newUser);
 
+        if (result.IsValid)
+        {   
+            
+            options["message"] = "User added successfuly!";
+            await HttpUtilities.Redirect(req, res, options, "/users");
+
+        }
+        else
+        {
+            options["message"] = result.Error!.Message;
+            await HttpUtilities.Redirect(req, res, options,"/users/add");
+        }
+            
     }
+    
+}

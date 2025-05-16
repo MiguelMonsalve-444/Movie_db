@@ -18,19 +18,27 @@ public class HttpUtilities
         res.Close();
     }
 
-    public static async Task ReadRequestFromData(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    public static async Task Redirect(HttpListenerRequest req, HttpListenerResponse res, Hashtable options, string location)
+    {
+        string message = options["message"] as string ?? req.QueryString["message"] ?? "";
+        string query = string.IsNullOrWhiteSpace(message) ? "" : "?message=" + HttpUtility.UrlEncode(message);
+        res.Redirect(location + query);
+        res.Close();
+
+        await Task.CompletedTask;
+    }
+
+    public static async Task ReadRequestFormData(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
         string? type = req.ContentType ?? "";
 
-        if (type.StartsWith("application/x-wwww-url-encoded"))
+        if (type.StartsWith("application/x-www-form-urlencoded"))
         {
             using var sr = new StreamReader(req.InputStream, Encoding.UTF8);
             string body = await sr.ReadToEndAsync();
-            var fromData = HttpUtility.ParseQueryString(body);
+            var formData = HttpUtility.ParseQueryString(body);
 
-            options["req.form"] = fromData;
-
-
+            options["req.form"] = formData;
         }
     }
 }

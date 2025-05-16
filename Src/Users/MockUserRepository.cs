@@ -34,7 +34,7 @@ public class MockUserRepository : IUserRepository
         int totalCount = users.Count;
         int Start = Math.Clamp((page - 1) * size, 0, totalCount);
         int Length = Math.Clamp(size, 0, totalCount - Start);
-        List<User> values = users.Slice(Start, Length);
+        List<User> values = users.GetRange(Start, Length);
         var pageResult = new PageResult<User>(values, totalCount);
 
         return await Task.FromResult(pageResult);
@@ -44,9 +44,6 @@ public class MockUserRepository : IUserRepository
     {
         user.Id = idCount++;
         users.Add(user);
-        
-       
-
        return await Task.FromResult(user);
     }
     public async Task<User?> Read(int id)
