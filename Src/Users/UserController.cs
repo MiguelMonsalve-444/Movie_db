@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Movie_db;
 
+using System.Xml;
 using Proyecto_peliculas;
 
 public class UserController
@@ -21,7 +22,7 @@ public class UserController
     {
         string message = (string?)options["message"] ?? "";
         int page = int.TryParse(req.QueryString["page"], out int p) ? p : 1;
-        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 40;
+        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 5;
 
         Result<PageResult<User>> result = await userService.ReadAll(page, size);
 
@@ -44,6 +45,10 @@ public class UserController
                 <td>{user.Password}</td>
                 <td>{user.Salt}</td>
                 <td>{user.Role}</td>
+                <td><a href=""/users/view?uid={user.Id}"">view</a></td>
+                <td><a href=""/users/edit?uid={user.Id}"">edit</a></td>
+                <td><a href=""/users/remove?uid={user.Id}"">remove</a></td>
+                                
             </tr>
             ";
             }
@@ -57,6 +62,9 @@ public class UserController
                <th>Password</th>
                <th>Salt</th>
                <th>Role</th>
+               <th>View</th>
+               <th>Edit</th>
+               <th>Remove</th>
             </thead>
             <tbody>
                 {rows}
@@ -118,30 +126,174 @@ public class UserController
 
     public async Task AddPost(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
     {
-
+        int uid = int.TryParse(req.QueryString["uid"], out int u) ? u : 1;
         var formData = (NameValueCollection?)options["req.form"] ?? [];
 
         string username = formData["username"] ?? "";
         string password = formData["password"] ?? "";
         string role = formData["role"] ?? "";
 
-         Console.WriteLine($"Username: {username}");
+        Console.WriteLine($"Username: {username}");
         User newUser = new User(0, username, password, "", role);
         Result<User> result = await userService.Create(newUser);
 
         if (result.IsValid)
-        {   
-            
-            options["message"] = "User added successfuly!";
+        {
+
+            options["message"] = "User Added succesfuly!";
             await HttpUtilities.Redirect(req, res, options, "/users");
 
         }
         else
         {
             options["message"] = result.Error!.Message;
-            await HttpUtilities.Redirect(req, res, options,"/users/add");
+            await HttpUtilities.Redirect(req, res, options, "/users/add");
         }
-            
+
     }
-    
+
+    //GEt users/View
+
+    public async Task ViewGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    {
+        string message = (string?)options["message"] ?? "";
+        int uid = int.TryParse(req.QueryString["uid"], out int u) ? u : 1;
+        int size = int.TryParse(req.QueryString["size"], out int s) ? s : 5;
+        Result<User> result = await userService.Read(uid);
+
+        if (result.IsValid && result.Value != null)
+        {
+            User user = result.Value!;
+
+
+            string html = $@"
+            <table border=""1"">
+            <thead>
+               <th>Id</th>
+               <th>UserName</th>
+               <th>Password</th>
+               <th>Salt</th>
+               <th>Role</th>
+            </thead>
+            <tbody>
+               <tr>
+                <td>{user.Id}</td>
+                <td>{user.Username}</td>
+                <td>{user.Password}</td>
+                <td>{user.Salt}</td>
+                <td>{user.Role}</td>
+            </tr>
+            </tbody>
+        </table>
+        <div>
+        {message}
+        </div>
+        ";
+            string content = HtmlTemplates.Base("Movie_db", "User View Page", html);
+            await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, content);
+
+        }
+
+    }
+
+    //GET / users/edit?uid=1
+
+    public async Task EditGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    {
+        string message = req.QueryString["message"] ?? "";
+        int uid = int.TryParse(req.QueryString["uid"], out int u) ? u : 1;
+        Result<User> result = await userService.Read(uid);
+
+
+        if (result.IsValid)
+        {
+            User user = result.Value!;
+
+
+            string roles = "";
+
+            foreach (var role in Roles.ROLES)
+            {
+                string selected = (role == user.Role) ? "selected" : "";
+                roles += @$"<option valuse=""{role}""{selected}>{role}</option>";
+            }
+            string html = @$"
+        
+        <form action=""/users/edit?uid={uid}"" method=""POST"">
+            <label for=""username"">Username</label>
+            <input id=""username"" name=""username"" type=""text"" placeholder=""Username"" value=""{user.Username}"">
+            <label for=""password"">Password</label>
+            <input id=""password"" name=""password"" type=""password"" placeholder=""Password""=""{user.Password}"">
+            <label for=""role"">Role</label>
+            <select id=""role"" name=""role"">
+            {roles}
+            </select>
+            <input type=""submit"" value=""edit"">
+        </form>
+        <div>
+        {message}
+        </div>
+        
+        ";
+
+            string content = HtmlTemplates.Base("Movie_db", "User edit Page", html);
+            await HttpUtilities.Respond(req, res, options, (int)HttpStatusCode.OK, content);
+
+        }
+        /* else
+         {
+             string error = result.Error!.Message;
+         }
+         */
+    }
+    //POST /users/edit?uid=1
+    public async Task EditPost(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    {
+        int uid = int.TryParse(req.QueryString["uid"], out int u) ? u : 1;
+        var formData = (NameValueCollection?)options["req.form"] ?? [];
+
+        string username = formData["username"] ?? "";
+        string password = formData["password"] ?? "";
+        string role = formData["role"] ?? "";
+        Console.WriteLine($"Username: {username}");
+        User newUser = new User(0, username, password, "", role);
+        Result<User> result = await userService.Update(uid, newUser);
+
+        if (result.IsValid)
+        {
+
+            options["message"] = "User edited successfuly!";
+            await HttpUtilities.Redirect(req, res, options, "/users");
+
+        }
+        else
+        {
+            options["message"] = result.Error!.Message;
+            await HttpUtilities.Redirect(req, res, options, "/users/edit");
+        }
+
+    }
+
+    // GET /users/delete?uid=1
+    public async Task RemoveGet(HttpListenerRequest req, HttpListenerResponse res, Hashtable options)
+    {
+     
+        int uid = int.TryParse(req.QueryString["uid"], out int u) ? u : 1;
+        Result<User> result = await userService.Delete(uid);
+
+
+        if (result.IsValid)
+        {
+            User user = result.Value!;
+            options["message"] = "User Removed succesfuly!";
+            await HttpUtilities.Redirect(req, res, options, "/users");
+        }
+        else
+        {
+            options["message"] = result.Error!.Message;
+            await HttpUtilities.Redirect(req, res, options,"/users");
+
+        }
+    }
+
 }

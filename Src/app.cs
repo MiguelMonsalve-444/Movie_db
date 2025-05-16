@@ -31,7 +31,11 @@ using Proyecto_peliculas;
         router.AddGet("/", autenticationController.LandingPageGet);
         router.AddGet("/users", userController.ViewAllGet);
         router.AddGet("/users/add", UserController.AddGet);
-        router.Addpost("/users/add", userController.AddPost);     
+        router.Addpost("/users/add", userController.AddPost);
+        router.AddGet("/users/view", userController.ViewGet);
+        router.AddGet("/users/edit", userController.EditGet);
+        router.Addpost("/users/edit", userController.EditPost);
+        router.AddGet("/users/remove", userController.RemoveGet);
 
 
     }
